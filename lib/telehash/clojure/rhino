@@ -1,37 +1,27 @@
 console.log( "Running" )
 
 if( typeof jsonToJQuery == 'undefined' ) {
-    function jsonToJQuery( json ) {
-        function objSize( obj ) {
-            var size = 0, key
-            for( key in obj ) {
-                if( obj.hasOwnProperty( key ) ) size++
-            }
-            return size
+    function jsonToJQuery( json, $parent ) {
+        if( typeof $parent == 'undefined' ) {
+            $parent = $('<div/>')
         }
-        function treeTraverse( json, $parent ) {
-            if( typeof $parent == 'undefined' ) {
-                $parent = $('<div/>')
+        for( prop in json ) {
+            if( prop[0] == '<' ) {
+                elem = prop
+            } else {
+                elem = '<' + prop + '/>'
             }
-            for( elem in json ) {
-                if( ! elem[0] != '<' ) {
-                    elem = '<' + elem + '/>'
-                }
-                var $new = $(elem)
-                if( typeof json[elem] == "string" ) {
-                    $new.text( json[elem] )
-                } else if( typeof json[elem] == "object" ) {
-                    treeTraverse( json[elem], $new )
-                }
-                $parent.append( $new )
+            var $new = $(elem)
+            if( typeof json[prop] == "string" ) {
+                $new.text( json[prop] )
+            } else if( typeof json[prop] == "object" ) {
+                jsonToJQuery( json[prop], $new )
             }
-            return $parent
+            $parent.append( $new )
         }
-        return treeTraverse( json )
+        return $parent
     }
 }
-
-console.log( jsonToJQuery( { div : {} } ).get(0).nodeName )
 
 $('body').append( jsonToJQuery(
     { 'div id="contacts"' : {
