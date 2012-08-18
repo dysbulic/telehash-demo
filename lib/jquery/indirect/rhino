@@ -101,6 +101,11 @@ var $ = function( arg1 ) {
                 $obj.call( 'clickByGUID', [ guid ] )
                 return $ret
             },
+            get: function( handler ) {
+                var args = Array.prototype.slice.call( arguments )
+                $obj.call( 'get', args )
+                return $ret
+            },
             extend: function() {
 	        var options, name, src, copy, copyIsArray, clone,
 		target = arguments[0] || {},
