@@ -1,0 +1,11 @@
+if( typeof message == 'undefined' ) {
+    message = "¡Hello World‼"
+}
+
+if( typeof print != 'undefined' ) {
+    print( message + "\n" )
+}
+
+if( typeof console != 'undefined' && typeof console.log != 'undefined') {
+    console.log( message )
+}
