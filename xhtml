@@ -20,26 +20,15 @@
     <script type="text/javascript">//<![CDATA[
       var hostApplet
 
-      $( function() {
-          console.log( 'Entered: xhtml' )
-          /*
-            $('applet').get(0).addEventListener( "ready", function() {
-            console.log( "applet loaded" )
-            } )
-          */
-
-          var $button = $('<button/>').text( 'Run' )
-          $('body').append( $button )
-       
-          $button.click( function() {
-              hostApplet = $('applet').get(0)
-              hostApplet.eval( '/lib/mimis/rhino' )
-              hostApplet.eval( '/lib/console/log/rhino' )
-              hostApplet.eval( '/lib/load/rhino' )
-              hostApplet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
-              hostApplet.eval( '/lib/telehash/clojure/rhino' )
-          } )
-      } )
+      function triggerAppletLoaded() {
+          hostApplet = $('applet').get(0)
+          hostApplet.eval( '/lib/mimis/rhino' )
+          hostApplet.eval( '/lib/console/log/rhino' )
+          hostApplet.eval( '/lib/load/rhino' )
+          hostApplet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
+          hostApplet.eval( '/lib/telehash/clojure/rhino' )
+          hostApplet.eval( "ChatWindow.addContact('will')" )
+      }
     //]]></script>
   </head>
   <body>
@@ -51,6 +40,6 @@
 -->
     <applet codebase="lib/script/runner/" archive="jar" code="org.dhappy.mimis.ScriptRunnerApplet"
 	    width="100%" height="100" alt="">
-      <param name="script" value="/lib/hello/world/rhino"/>Tip</applet>
+      <param name="script" value="/lib/trigger/applet/loaded/rhino"/>Tip</applet>
   </body>
 </html>
