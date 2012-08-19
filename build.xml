@@ -57,8 +57,9 @@
       </fileset>
       <fileset dir="." followsymlinks="false">
         <exclude name="**/jar" />
-        <include name="bin/"/>
+        <!--
         <include name="lib/"/>
+        -->
         <include name="test/"/>
         <exclude name="..." />
         <exclude name="**/..." />
