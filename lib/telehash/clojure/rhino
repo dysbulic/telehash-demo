@@ -43,7 +43,7 @@ $('body').append( jsonToJQuery(
 ) )
 
 $('body').append( jsonToJQuery(
-    { 'div id="new_contact"': {
+    { 'div id="new_contact" class="hidden"': {
         'label for="name"' : 'Name:',
         'input type="text" id="name"' : {}
     } }
