@@ -1,0 +1,31 @@
+mimis = typeof mimis == 'undefined' ? {} : mimis
+
+mimis.objToJSObject = typeof mimis.objToJSObject != 'undefined' ? mimis.objToJSObject :
+    function objToJSObject( obj ) {
+        var JSObject = Packages.netscape.javascript.JSObject
+        var window = JSObject.getWindow( hostApplet )
+
+        if( typeof obj == 'object' ) {
+            var jsObj = window.eval( '(function() { return {} })()' )
+            for( prop in obj ) {
+                if( obj.hasOwnProperty( prop ) ) {
+                    jsObj.setMember( prop, mimis.objToJSObject( obj[ prop ] ) )
+                }
+            }
+            return jsObj
+        } else if( typeof obj == 'function' ) {
+            var jsFunc = window.eval( "(function() { return (" + obj.toString() + ") })()" )
+            return jsFunc
+        }
+        return obj
+    }
+
+mimis.objArrayToJSObjectArray = typeof mimis.objArrayToJSObjectArray != 'undefined' ? mimis.objArrayToJSObjectArray :
+    function objArrayToJSObjectArray( obj ) {
+        var out = []
+        for( idx in obj ) {
+            out[ idx ] = mimis.objToJSObject( obj[ idx ] )
+        }
+        return out
+    }
+

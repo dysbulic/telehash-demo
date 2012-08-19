@@ -12,12 +12,9 @@
     <script type="text/javascript"
 	    src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js">
     </script>
-    <!--
     <script type="text/javascript"
             src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js">
     </script>
-    -->
-    <script type="text/javascript" src="lib/jquery/ui/jquery"></script>
 
     <script type="text/javascript" src="lib/jquery/indirect/js"></script>
 
@@ -29,25 +26,6 @@
             console.log( "applet loaded" )
             } )
           */
-
-          window.printTestObject = function( obj ) {
-              console.log( obj )
-              obj.buttons.Add()
-              var $holder = $('<div/>')
-              $('body').append( $holder )
-              $holder.dialog( obj )
-          }
-
-          console.log( {
-              buttons : {
-                  Add : function() {
-                      $('#new_contact').dialog( 'close' )
-                  },
-                  Cancel : function() {
-                      $('#new_contact').dialog( 'close' )
-                  },
-              }
-          } )
 
           var $button = $('<button/>').text( 'Run' )
           $('body').append( $button )

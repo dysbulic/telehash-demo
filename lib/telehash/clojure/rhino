@@ -49,26 +49,41 @@ $('body').append( jsonToJQuery(
     } }
 ) )
 
-var buttons = {
-    buttons : {
-        Add : function() {
-            console.log( 'Adding' )
-            $('#new_contact').dialog( 'close' )
-        },
-        Cancel : function() {
-            $('#new_contact').dialog( 'close' )
-        },
+ChatWindow = typeof ChatWindow == 'undefined' ? {} : ChatWindow
+ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
+    function( name ) {
+
+        /*
+          var HashSet = java.util.HashSet
+          var Database = packages.telehash.samples.simplechat.Database
+          var ODocument = packages.com.orientechnologies.orient.core.record.impl.ODocument
+          var OType = packages.com.orientechnologies.orient.core.metadata.schema.OType
+          
+          Database.withDatabase( new Database.DatabaseHandlerVoid() {
+          public void doWithDatabase( db ) {
+          final ODocument doc = new ODocument( db, 'Contact' )
+          doc.field( 'name', name )
+          doc.field( 'created_at', System.currentTimeMillis() )
+          doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
+          doc.save()
+          }
+          } )
+        */
+
+        $('#contact').append( $('<li/>').text( name ) )
     }
-}
 
-console.log( buttons )
-
-var JSObject = Packages.netscape.javascript.JSObject
-var window = JSObject.getWindow( hostApplet )
-
-window.call( 'printTestObject', [ mimis.objToJSObject( buttons ) ] )
 
 $('button#add').click( function() {
-    console.log( 'Adding New Contact' )
-    $('#new_contact').dialog( buttons )
+    $('#new_contact').dialog( {
+        buttons : {
+            Add : function() {
+                applet.eval( "ChatWindow.addContact(" + $("#name").val() + ")" )
+                $('#new_contact').dialog( 'close' )
+            },
+            Cancel : function() {
+                $('#new_contact').dialog( 'close' )
+            },
+        }
+    } )
 } )

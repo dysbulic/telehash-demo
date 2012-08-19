@@ -5,10 +5,12 @@ import java.util.logging.Level;
 
 import java.util.List;
 
+import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.StringReader;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngineFactory;
@@ -53,23 +55,26 @@ public class ScriptRunnerApplet extends JApplet {
 	try {
 	    try {
 		stream = ScriptRunnerApplet.class.getResourceAsStream( script );
+                Reader reader = null;
 		if( stream == null ) {
-		    log.log( Level.WARNING, "Could not get: " + script );
+                    reader = new StringReader( script );
+		    log.log( Level.WARNING, "Interpreting as script: " + script );
 		} else {
-                    final BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
+                    reader = new InputStreamReader( stream );
+                }
+                final BufferedReader bufferedReader = new BufferedReader( reader );
 
-                    return AccessController.doPrivileged( new PrivilegedAction() {
-                            public Object run() {
-                                try {
-                                    return js.eval( reader );
-                                } catch( ScriptException se ) {
-                                    log.log( Level.WARNING, se.getMessage(), se );
-                                }
-                                return null;
+                return AccessController.doPrivileged( new PrivilegedAction() {
+                        public Object run() {
+                            try {
+                                return js.eval( bufferedReader );
+                            } catch( ScriptException se ) {
+                                log.log( Level.WARNING, se.getMessage(), se );
                             }
-                        } );
-		}
-	    } finally {
+                            return null;
+                        }
+                    } );
+            } finally {
 		if( stream != null ) {
 		    stream.close();
 		}
