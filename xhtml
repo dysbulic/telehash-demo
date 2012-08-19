@@ -19,6 +19,8 @@
     <script type="text/javascript" src="lib/jquery/indirect/js"></script>
 
     <script type="text/javascript">//<![CDATA[
+      var hostApplet
+
       $( function() {
           console.log( 'Entered: xhtml' )
           /*
@@ -31,12 +33,12 @@
           $('body').append( $button )
        
           $button.click( function() {
-              var applet = $('applet').get(0)
-              applet.eval( '/lib/mimis/rhino' )
-              applet.eval( '/lib/console/log/rhino' )
-              applet.eval( '/lib/load/rhino' )
-              applet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
-              applet.eval( '/lib/telehash/clojure/rhino' )
+              hostApplet = $('applet').get(0)
+              hostApplet.eval( '/lib/mimis/rhino' )
+              hostApplet.eval( '/lib/console/log/rhino' )
+              hostApplet.eval( '/lib/load/rhino' )
+              hostApplet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
+              hostApplet.eval( '/lib/telehash/clojure/rhino' )
           } )
       } )
     //]]></script>

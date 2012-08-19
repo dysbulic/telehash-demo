@@ -78,7 +78,7 @@ $('button#add').click( function() {
     $('#new_contact').dialog( {
         buttons : {
             Add : function() {
-                applet.eval( "ChatWindow.addContact(" + $("#name").val() + ")" )
+                hostApplet.eval( "ChatWindow.addContact('" + $("#name").val() + "')" )
                 $('#new_contact').dialog( 'close' )
             },
             Cancel : function() {
