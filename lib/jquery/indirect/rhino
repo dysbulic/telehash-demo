@@ -5,7 +5,7 @@
  * hostApplet is a reference to the applet
  */
 
-print( "Entering: jquery/indirect/" + "\n" )
+console.log( 'Entering: jquery/indirect/' )
 
 var JSObject = Packages.netscape.javascript.JSObject
 
@@ -17,7 +17,7 @@ function guidClicked( guid ) {
     if( handler != undefined ) {
         handler.call( $rets[ guid ] )
     } else {
-        print( "Couldn't get handler: " + guid + " : " + clickHandlers.length + "\n" )
+        console.log( "Couldn't get handler: " + guid + " : " + clickHandlers.length + "\n" )
     }
 }
 
@@ -26,7 +26,7 @@ var $ = function( arg1 ) {
         return arg1
     }
     
-    print( "Entering: jquery/indirect/$" + "\n" )
+    console.log( 'Entering: jquery/indirect/$' )
     var window = JSObject.getWindow( hostApplet )
     if( window ) {
         var args = Array.prototype.slice.call( arguments )
@@ -35,7 +35,7 @@ var $ = function( arg1 ) {
 
         var $ret = {
             append: function( $elem ) {
-                print( "Appending: " + $elem + " : " + $elem.guid + "\n" )
+                console.log( "Appending: " + $elem + " : " + $elem.guid + "\n" )
                 $obj.call( 'appendByGUID', [ $elem.guid ] )
                 return $ret
             },
@@ -97,13 +97,19 @@ var $ = function( arg1 ) {
             },
             click: function( handler ) {
                 clickHandlers[ $ret.guid ] = handler
-                print( "/lib/jquery/indirect/$/click: " + guid + " : " + typeof clickHandlers[ guid ] + " : " + clickHandlers.length + "\n" )
+                console.log( "/lib/jquery/indirect/$/click: " + guid + " : " + typeof clickHandlers[ guid ] + " : " + clickHandlers.length + "\n" )
                 $obj.call( 'clickByGUID', [ guid ] )
                 return $ret
             },
             get: function( handler ) {
                 var args = Array.prototype.slice.call( arguments )
                 $obj.call( 'get', args )
+                return $ret
+            },
+            dialog: function( handler ) {
+                var args = Array.prototype.slice.call( arguments )
+                args = mimis.objArrayToJSObjectArray( args )
+                $obj.call( 'dialog', args )
                 return $ret
             },
             extend: function() {
@@ -173,7 +179,7 @@ var $ = function( arg1 ) {
             isIndirectJQuery: true,
         }
     } else {
-        print( "Couldn't get window" + "\n" )
+        console.log( "Couldn't get window" + "\n" )
     }
     $rets[ guid ] = $ret
     return $ret

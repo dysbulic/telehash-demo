@@ -4,35 +4,62 @@
   <head>
     <title>Testing Tip</title>
     <link rel="stylesheet" type="text/css" href=".../style/blog/" />
-    <link rel="stylesheet" type="text/css" href="css" />
+    <link rel="stylesheet" type="text/css" href="style/chat/css" />
+    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.8.23/themes/base/jquery-ui.css" />
     <style type="text/css">
       li:hover { color: orange; }
     </style>
     <script type="text/javascript"
 	    src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js">
     </script>
+    <!--
+    <script type="text/javascript"
+            src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js">
+    </script>
+    -->
+    <script type="text/javascript" src="lib/jquery/ui/jquery"></script>
 
     <script type="text/javascript" src="lib/jquery/indirect/js"></script>
 
     <script type="text/javascript">//<![CDATA[
       $( function() {
-        console.log( 'Entered: xhtml' )
-        /*
-        $('applet').get(0).addEventListener( "ready", function() {
-          console.log( "applet loaded" )
-        } )
-        */
+          console.log( 'Entered: xhtml' )
+          /*
+            $('applet').get(0).addEventListener( "ready", function() {
+            console.log( "applet loaded" )
+            } )
+          */
 
-        var $button = $('<button/>').text( 'Run' )
-        $('body').append( $button )
+          window.printTestObject = function( obj ) {
+              console.log( obj )
+              obj.buttons.Add()
+              var $holder = $('<div/>')
+              $('body').append( $holder )
+              $holder.dialog( obj )
+          }
+
+          console.log( {
+              buttons : {
+                  Add : function() {
+                      $('#new_contact').dialog( 'close' )
+                  },
+                  Cancel : function() {
+                      $('#new_contact').dialog( 'close' )
+                  },
+              }
+          } )
+
+          var $button = $('<button/>').text( 'Run' )
+          $('body').append( $button )
        
-        $button.click( function() {
-          var applet = $('applet').get(0)
-          applet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
-          applet.eval( '/lib/load/rhino' )
-          applet.eval( '/lib/console/log/rhino' )
-          applet.eval( '/lib/telehash/clojure/rhino' )
-        } )
+          $button.click( function() {
+              var applet = $('applet').get(0)
+              applet.eval( '/lib/mimis/rhino' )
+              applet.eval( '/lib/console/log/rhino' )
+              applet.eval( '/lib/load/rhino' )
+              applet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
+              applet.eval( '/lib/telehash/clojure/rhino' )
+          } )
       } )
     //]]></script>
   </head>

@@ -2,7 +2,14 @@ console.log( "Running" )
 
 if( typeof jsonToJQuery == 'undefined' ) {
     function jsonToJQuery( json, $parent ) {
-        if( typeof $parent == 'undefined' ) {
+        function objSize( obj ) {
+            var size = 0, key
+            for( key in obj ) {
+                if( obj.hasOwnProperty( key ) ) size++
+            }
+            return size
+        }
+        if( typeof $parent == 'undefined' && objSize( json ) > 1 ) {
             $parent = $('<div/>')
         }
         for( prop in json ) {
@@ -17,7 +24,11 @@ if( typeof jsonToJQuery == 'undefined' ) {
             } else if( typeof json[prop] == "object" ) {
                 jsonToJQuery( json[prop], $new )
             }
-            $parent.append( $new )
+            if( typeof $parent == 'undefined' ) {
+                $parent = $new
+            } else {
+                $parent.append( $new )
+            }
         }
         return $parent
     }
@@ -26,6 +37,38 @@ if( typeof jsonToJQuery == 'undefined' ) {
 $('body').append( jsonToJQuery(
     { 'div id="contacts"' : {
         p : 'Contacts',
-        'ul id="contact"' : {}
+        'ul id="contact"' : {},
+        'button id="add"': 'Add Contact'
     } }
 ) )
+
+$('body').append( jsonToJQuery(
+    { 'div id="new_contact"': {
+        'label for="name"' : 'Name:',
+        'input type="text" id="name"' : {}
+    } }
+) )
+
+var buttons = {
+    buttons : {
+        Add : function() {
+            console.log( 'Adding' )
+            $('#new_contact').dialog( 'close' )
+        },
+        Cancel : function() {
+            $('#new_contact').dialog( 'close' )
+        },
+    }
+}
+
+console.log( buttons )
+
+var JSObject = Packages.netscape.javascript.JSObject
+var window = JSObject.getWindow( hostApplet )
+
+window.call( 'printTestObject', [ mimis.objToJSObject( buttons ) ] )
+
+$('button#add').click( function() {
+    console.log( 'Adding New Contact' )
+    $('#new_contact').dialog( buttons )
+} )

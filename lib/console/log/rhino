@@ -4,9 +4,12 @@ console.log = typeof console.log != 'undefined' ? console.log :
     function() {
         var JSObject = Packages.netscape.javascript.JSObject
         var window = JSObject.getWindow( hostApplet )
+
         if( window ) {
             var args = Array.prototype.slice.call( arguments )
             var console = window.getMember( 'console' )
-            var log = console.call( 'log', args )
+            var log = console.call( 'log', mimis.objArrayToJSObjectArray( args ) )
+        } else {
+            print( 'Count not get window' )
         }
     }
