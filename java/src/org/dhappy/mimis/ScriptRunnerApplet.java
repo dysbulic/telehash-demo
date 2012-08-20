@@ -57,8 +57,8 @@ public class ScriptRunnerApplet extends JApplet {
 		stream = ScriptRunnerApplet.class.getResourceAsStream( script );
                 Reader reader = null;
 		if( stream == null ) {
-                    reader = new StringReader( script );
 		    log.log( Level.WARNING, "Interpreting as script: " + script );
+                    reader = new StringReader( script );
 		} else {
                     reader = new InputStreamReader( stream );
                 }

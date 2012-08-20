@@ -52,13 +52,15 @@ $('body').append( jsonToJQuery(
 ChatWindow = typeof ChatWindow == 'undefined' ? {} : ChatWindow
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
-                /*
+        var System = java.lang.System
         var HashSet = java.util.HashSet
         var Database = Packages.telehash.samples.simplechat.Database
         var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
 
-        Database.withDatabase( {
+        console.log( typeof Database.withDatabase )
+
+        Database.withDatabase( new Database.DatabaseHandlerVoid ( {
             doWithDatabase : function( db ) {
                 var doc = new ODocument( db, 'Contact' )
                 doc.field( 'name', name )
@@ -66,8 +68,7 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
                 doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
                 doc.save()
             }
-        } )
-                */
+        } ) )
 
         $('#contact').append( $('<li/>').text( name ) )
     }
