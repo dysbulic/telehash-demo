@@ -58,8 +58,6 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
         var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
 
-        console.log( typeof Database.withDatabase )
-
         Database.withDatabase( new Database.DatabaseHandlerVoid ( {
             doWithDatabase : function( db ) {
                 var doc = new ODocument( db, 'Contact' )
