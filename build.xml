@@ -108,11 +108,15 @@
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="${main.class}" />
         <attribute name="Class-Path"
+<<<<<<< HEAD
                    value="lib/telehash/jar lib/telehash/clojure/jar lib/orientDB/core/jar" />
 <!--
         <attribute name="Class-Path"
                    value="lib/telehash/jar lib/telehash/clojure/jar"/>
 -->
+=======
+                   value="lib/telehash/jar lib/telehash/clojure/jar"/>
+>>>>>>> fc0f81a461bee01066e2f5ddb61c50b9ef2069f0
       </manifest>
     </jar>
 <!--
@@ -124,7 +128,10 @@
     <signjar jar="${jar}" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/telehash/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/telehash/clojure/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
+<<<<<<< HEAD
     <signjar jar="lib/orientDB/core/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
+=======
+>>>>>>> fc0f81a461bee01066e2f5ddb61c50b9ef2069f0
 <!--
     <signjar jar="lib/htmlunit/core/js/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
 -->
