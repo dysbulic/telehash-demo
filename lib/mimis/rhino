@@ -6,6 +6,9 @@ mimis.objToJSObject = typeof mimis.objToJSObject != 'undefined' ? mimis.objToJSO
         var window = JSObject.getWindow( hostApplet )
 
         if( typeof obj == 'object' ) {
+            if( obj == null ) {
+                return obj
+            }
             var jsObj = window.eval( '(function() { return {} })()' )
             for( prop in obj ) {
                 if( obj.hasOwnProperty( prop ) ) {

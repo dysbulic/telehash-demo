@@ -1,3 +1,4 @@
+/*
 console.log( "Running" )
 
 if( typeof jsonToJQuery == 'undefined' ) {
@@ -49,12 +50,13 @@ $('body').append( jsonToJQuery(
     } }
 ) )
 
+var Database = Packages.telehash.samples.simplechat.Database
+
 ChatWindow = typeof ChatWindow == 'undefined' ? {} : ChatWindow
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
         var System = java.lang.System
         var HashSet = java.util.HashSet
-        var Database = Packages.telehash.samples.simplechat.Database
         var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
 
@@ -84,3 +86,80 @@ $('button#add').click( function() {
         }
     } )
 } )
+*/
+var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
+var InterestingEndsHolder = Packages.telehash.api.InterestingEndsHolder
+var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
+var ObjectCreationWorkaround = Packages.org.dhappy.mimis.ObjectCreationWorkaround
+
+print( 'typeof ObjectCreationWorkaround = ' + typeof ObjectCreationWorkaround )
+print( 'typeof ObjectCreationWorkaround.getInterestingEndsHolder = ' + typeof ObjectCreationWorkaround.getInterestingEndsHolder )
+print( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
+
+//var app_port = new ApplicationPortImpl()
+
+/*
+    try {
+        var app_port = new ApplicationPortImpl()
+        //var interestingEndsHolder = new InterestingEndsHolderImpl()
+
+        print( 'typeof app_port = ' + typeof app_port )
+    } catch( ex ) {
+        print( "Error instantiating InterestingEndsHolderImpl: " + ex )
+    }
+
+    var self
+*/
+
+var String = java.lang.String
+var string = new String( 'test' )
+//print( "String = " + string )
+
+/*
+print( "Database.isEmptyDatabase = " + Database.isEmptyDatabase() )
+
+function setSelf( name ) {
+    app_port.addOwnEnd( app_port.hash( name ) )
+    self = name
+}
+
+if(! Database.isEmptyDatabase() ) {
+    setSelf( Database.withDatabase( new Database.DatabaseHandler( {
+        doWithDatabase : function( db ) {
+            var result = db.query( new OSQLSynchQuery( 'select * from Self' ) )
+            if( result.size() != 1 ) {
+                throw new IllegalStateException( 'More than one Self found in database!' )
+            }
+            return result.get( 0 ).field( 'name' )
+        }
+    } ) ) )
+}
+app_port.addSwitchListener( new SwitchListener( {
+    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
+        if( ! app_port.hash( self ).equals( string ) ) {
+            interestingEndsHolder.put( string, counterpartySwitch )
+        }
+    }
+} ) )
+app_port.startSwitch()
+*/
+/*
+var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+var Iterator = java.util.Iterator
+
+if( ! Database.isEmptyDatabase() ) {
+    Database.withDatabase( new Database.DatabaseHandlerVoid( {
+        doWithDatabase : function( db ) {
+            if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
+                var result = db.query( new OSQLSynchQuery( 'select distinct * from Contact' ) )
+                var iterator = result.iterator()
+                while( iterator.hasNext() ) {
+                    var doc = iterator.next()
+                    var name = doc.field( 'name' )
+                    ChatWindow.addContact( name.toString() )
+                }
+            }
+        }
+    } ) )
+}
+*/

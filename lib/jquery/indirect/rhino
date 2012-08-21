@@ -26,7 +26,6 @@ var $ = function( arg1 ) {
         return arg1
     }
     
-    console.log( 'Entering: jquery/indirect/$' )
     var window = JSObject.getWindow( hostApplet )
     if( window ) {
         var args = Array.prototype.slice.call( arguments )

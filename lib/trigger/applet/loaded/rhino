@@ -1,4 +1,8 @@
 var JSObject = Packages.netscape.javascript.JSObject
 var window = JSObject.getWindow( hostApplet )
 
-window.call( 'triggerAppletLoaded', null )
+try {
+    window.call( 'triggerAppletLoaded', [] )
+} catch( ex ) {
+    console.log( "Error in triggerAppletLoaded(): " + ex )
+}

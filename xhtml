@@ -20,14 +20,16 @@
     <script type="text/javascript">//<![CDATA[
       var hostApplet
 
+      
+
       function triggerAppletLoaded() {
           hostApplet = $('applet').get(0)
           hostApplet.eval( '/lib/mimis/rhino' )
           hostApplet.eval( '/lib/console/log/rhino' )
-          hostApplet.eval( '/lib/load/rhino' )
-          hostApplet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
+          //hostApplet.eval( '/lib/load/rhino' )
+          //hostApplet.eval( '/lib/jquery/indirect/rhino' ) // paired w/ js above
           hostApplet.eval( '/lib/telehash/clojure/rhino' )
-          hostApplet.eval( "ChatWindow.addContact('will')" )
+          //hostApplet.eval( "ChatWindow.addContact('will')" )
       }
     //]]></script>
   </head>
