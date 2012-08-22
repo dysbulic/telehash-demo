@@ -42,7 +42,6 @@
     <copy todir="build/">
       <fileset dir="java/src" followsymlinks="false">
         <include name="**/ScriptRunnerApplet.java"/>
-        <include name="**/ObjectCreationWorkaround.java"/>
         <exclude name="..." />
         <exclude name="**/..." />
       </fileset>
@@ -100,7 +99,7 @@
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="${main.class}" />
         <attribute name="Class-Path"
-                   value="lib/telehash/jar" />
+                   value="lib/telehash/jar lib/clojure/jar" />
 
         <!--
         <attribute name="Class-Path"

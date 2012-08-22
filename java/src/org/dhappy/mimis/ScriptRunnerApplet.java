@@ -40,14 +40,12 @@ public class ScriptRunnerApplet extends JApplet {
     public void start() {
         js.put( "hostApplet", this );
 
-        // AccessController.doPrivileged( new PrivilegedAction() {
-        //         public Object run() {
-        //             js.put( "interestingEndsHolder", new InterestingEndsHolderImpl() );
-        //             return null;
-        //         }
-        //     } );
-
-        InterestingEndsHolderImpl ends = new InterestingEndsHolderImpl();
+        AccessController.doPrivileged( new PrivilegedAction() {
+                public Object run() {
+                    //js.put( "interestingEndsHolder", new InterestingEndsHolderImpl() );
+                    return null;
+                }
+            } );
 
 	String script = this.getParameter( "script" );
 	if( script != null ) {

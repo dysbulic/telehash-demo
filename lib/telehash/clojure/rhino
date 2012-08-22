@@ -92,20 +92,25 @@ var InterestingEndsHolder = Packages.telehash.api.InterestingEndsHolder
 var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
 var ObjectCreationWorkaround = Packages.org.dhappy.mimis.ObjectCreationWorkaround
 
-print( 'typeof ObjectCreationWorkaround = ' + typeof ObjectCreationWorkaround )
-print( 'typeof ObjectCreationWorkaround.getInterestingEndsHolder = ' + typeof ObjectCreationWorkaround.getInterestingEndsHolder )
-print( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
+console.log( 'typeof ObjectCreationWorkaround = ' + typeof ObjectCreationWorkaround )
+console.log( 'typeof ObjectCreationWorkaround.getInterestingEndsHolder = ' + typeof ObjectCreationWorkaround.getInterestingEndsHolder )
+console.log( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
+
+var ClassLoader = java.lang.ClassLoader
+console.log( typeof ClassLoader.getSystemClassLoader().getResource( "primes.txt" ) == null )
+
+var interestingEndsHolder = new InterestingEndsHolderImpl()
+console.log( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
 
 //var app_port = new ApplicationPortImpl()
 
 /*
     try {
         var app_port = new ApplicationPortImpl()
-        //var interestingEndsHolder = new InterestingEndsHolderImpl()
 
-        print( 'typeof app_port = ' + typeof app_port )
+        console.log( 'typeof app_port = ' + typeof app_port )
     } catch( ex ) {
-        print( "Error instantiating InterestingEndsHolderImpl: " + ex )
+        console.log( "Error instantiating InterestingEndsHolderImpl: " + ex )
     }
 
     var self
@@ -113,10 +118,10 @@ print( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
 
 var String = java.lang.String
 var string = new String( 'test' )
-//print( "String = " + string )
+console.log( "String = " + string )
 
 /*
-print( "Database.isEmptyDatabase = " + Database.isEmptyDatabase() )
+console.log( "Database.isEmptyDatabase = " + Database.isEmptyDatabase() )
 
 function setSelf( name ) {
     app_port.addOwnEnd( app_port.hash( name ) )
