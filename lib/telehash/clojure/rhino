@@ -1,6 +1,3 @@
-/*
-console.log( "Running" )
-
 if( typeof jsonToJQuery == 'undefined' ) {
     function jsonToJQuery( json, $parent ) {
         function objSize( obj ) {
@@ -73,6 +70,19 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
         $('#contact').append( $('<li/>').text( name ) )
     }
 
+ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? ChatWindow.clearContacts :
+    function() {
+        Database.withDatabase( new Database.DatabaseHandlerVoid ( {
+            doWithDatabase : function( db ) {
+                var doc = new ODocument( db, 'Contact' )
+                doc.field( 'name', name )
+                doc.field( 'created_at', System.currentTimeMillis() )
+                doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
+                doc.save()
+            }
+        } ) )
+    }
+
 $('button#add').click( function() {
     $('#new_contact').dialog( {
         buttons : {
@@ -86,45 +96,17 @@ $('button#add').click( function() {
         }
     } )
 } )
-*/
+
 var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
-var InterestingEndsHolder = Packages.telehash.api.InterestingEndsHolder
 var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
-var ObjectCreationWorkaround = Packages.org.dhappy.mimis.ObjectCreationWorkaround
-
-console.log( 'typeof ObjectCreationWorkaround = ' + typeof ObjectCreationWorkaround )
-console.log( 'typeof ObjectCreationWorkaround.getInterestingEndsHolder = ' + typeof ObjectCreationWorkaround.getInterestingEndsHolder )
-console.log( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
-
-var ClassLoader = java.lang.ClassLoader
-console.log( typeof ClassLoader.getSystemClassLoader().getResource( "primes.txt" ) == null )
+var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
 var interestingEndsHolder = new InterestingEndsHolderImpl()
-console.log( 'typeof interestingEndsHolder = ' + typeof interestingEndsHolder )
-
-//var app_port = new ApplicationPortImpl()
-
-/*
-    try {
-        var app_port = new ApplicationPortImpl()
-
-        console.log( 'typeof app_port = ' + typeof app_port )
-    } catch( ex ) {
-        console.log( "Error instantiating InterestingEndsHolderImpl: " + ex )
-    }
-
-    var self
-*/
-
-var String = java.lang.String
-var string = new String( 'test' )
-console.log( "String = " + string )
-
-/*
-console.log( "Database.isEmptyDatabase = " + Database.isEmptyDatabase() )
+var applicationPort = new ApplicationPortImpl()
+var self
 
 function setSelf( name ) {
-    app_port.addOwnEnd( app_port.hash( name ) )
+    applicationPort.addOwnEnd( applicationPort.hash( name ) )
     self = name
 }
 
@@ -139,24 +121,25 @@ if(! Database.isEmptyDatabase() ) {
         }
     } ) ) )
 }
-app_port.addSwitchListener( new SwitchListener( {
+
+var SwitchListener = Packages.telehash.api.SwitchListener
+
+applicationPort.addSwitchListener( new SwitchListener( {
     counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
-        if( ! app_port.hash( self ).equals( string ) ) {
+        if( ! applicationPort.hash( self ).equals( string ) ) {
             interestingEndsHolder.put( string, counterpartySwitch )
         }
     }
 } ) )
-app_port.startSwitch()
-*/
-/*
-var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+applicationPort.startSwitch()
+
 var Iterator = java.util.Iterator
 
 if( ! Database.isEmptyDatabase() ) {
     Database.withDatabase( new Database.DatabaseHandlerVoid( {
         doWithDatabase : function( db ) {
             if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
-                var result = db.query( new OSQLSynchQuery( 'select distinct * from Contact' ) )
+                var result = db.query( new OSQLSynchQuery( 'select * from Contact' ) )
                 var iterator = result.iterator()
                 while( iterator.hasNext() ) {
                     var doc = iterator.next()
@@ -167,4 +150,3 @@ if( ! Database.isEmptyDatabase() ) {
         }
     } ) )
 }
-*/

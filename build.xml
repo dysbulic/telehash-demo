@@ -68,7 +68,6 @@
       <!--<compilerarg value="-Xlint"/>-->
       <classpath>
         <pathelement location="lib/netscape/javascript/jar"/>
-        <pathelement location="lib/telehash/jar"/>
 <!--
         <pathelement location="lib/rhino/js/jar"/>
         <pathelement location="lib/htmlunit/core/js/jar"/>
@@ -99,12 +98,8 @@
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="${main.class}" />
         <attribute name="Class-Path"
-                   value="lib/telehash/jar lib/clojure/jar" />
-
-        <!--
-        <attribute name="Class-Path"
                    value="lib/telehash/jar lib/telehash/clojure/jar lib/telehash/clojure/chat/jar lib/orientDB/core/jar lib/orientDB/common/jar lib/orientDB/client/jar lib/orientDB/tools/jar " />
-        -->
+
 <!--
         <attribute name="Class-Path"
                    value="lib/telehash/jar lib/telehash/clojure/jar"/>

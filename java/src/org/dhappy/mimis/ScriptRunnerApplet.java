@@ -24,8 +24,6 @@ import netscape.javascript.JSObject;
 
 import javax.swing.JApplet;
 
-import telehash.switchimpl.api.InterestingEndsHolderImpl;
-
 public class ScriptRunnerApplet extends JApplet {
     private static Logger log =
 	Logger.getLogger( ScriptRunnerApplet.class.getName() );
@@ -39,13 +37,6 @@ public class ScriptRunnerApplet extends JApplet {
 
     public void start() {
         js.put( "hostApplet", this );
-
-        AccessController.doPrivileged( new PrivilegedAction() {
-                public Object run() {
-                    //js.put( "interestingEndsHolder", new InterestingEndsHolderImpl() );
-                    return null;
-                }
-            } );
 
 	String script = this.getParameter( "script" );
 	if( script != null ) {
