@@ -1,55 +1,42 @@
-if( typeof jsonToJQuery == 'undefined' ) {
-    function jsonToJQuery( json, $parent ) {
-        function objSize( obj ) {
-            var size = 0, key
-            for( key in obj ) {
-                if( obj.hasOwnProperty( key ) ) size++
-            }
-            return size
-        }
-        if( typeof $parent == 'undefined' && objSize( json ) > 1 ) {
-            $parent = $('<div/>')
-        }
-        for( prop in json ) {
-            if( prop[0] == '<' ) {
-                elem = prop
-            } else {
-                elem = '<' + prop + '/>'
-            }
-            var $new = $(elem)
-            if( typeof json[prop] == "string" ) {
-                $new.text( json[prop] )
-            } else if( typeof json[prop] == "object" ) {
-                jsonToJQuery( json[prop], $new )
-            }
-            if( typeof $parent == 'undefined' ) {
-                $parent = $new
-            } else {
-                $parent.append( $new )
-            }
-        }
-        return $parent
-    }
-}
-
-$('body').append( jsonToJQuery(
+$('body').prepend( mimis.jsonToJQuery(
     { 'div id="contacts"' : {
         p : 'Contacts',
         'ul id="contact"' : {},
-        'button id="add"': 'Add Contact'
+        'button id="add"': 'Add Contact',
+        'button id="clear"': 'Clear Contacts',
+        'button id="username"': 'Set Username',
     } }
 ) )
 
-$('body').append( jsonToJQuery(
-    { 'div id="new_contact" class="hidden"': {
+$('body').prepend( mimis.jsonToJQuery(
+    { 'div id="new_contact" class="hidden" title="Add Contact"': {
+        'label for="name"' : 'Name:',
+        'input type="text" id="name"' : {}
+    } }
+) )
+
+$('body').prepend( mimis.jsonToJQuery(
+    { 'div id="set_username" class="hidden" title="Set Username"': {
         'label for="name"' : 'Name:',
         'input type="text" id="name"' : {}
     } }
 ) )
 
 var Database = Packages.telehash.samples.simplechat.Database
+var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
-ChatWindow = typeof ChatWindow == 'undefined' ? {} : ChatWindow
+function isEmptyDatabase() {
+    return Database.withDatabase( new Database.DatabaseHandler( {
+        doWithDatabase : function( db ) {
+            return db.getMetadata().getSchema().getClass( 'Self' ) == null
+        }
+    } ) )
+}
+
+ChatWindow = typeof ChatWindow != 'undefined' ? ChatWindow : {}
+
+ChatWindow.contacted = typeof ChatWindow.contacted != 'undefined' ? ChatWindow.contacts : {}
+
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
         var System = java.lang.System
@@ -57,31 +44,94 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
         var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
 
-        Database.withDatabase( new Database.DatabaseHandlerVoid ( {
+        var count = Database.withDatabase( new Database.DatabaseHandler( {
             doWithDatabase : function( db ) {
-                var doc = new ODocument( db, 'Contact' )
-                doc.field( 'name', name )
-                doc.field( 'created_at', System.currentTimeMillis() )
-                doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
-                doc.save()
+                var size = 0
+                if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
+                    var result = db.query( new OSQLSynchQuery( "select * from Contact where name = '" + name + "'" ) )
+                    size = result.size()
+                }
+                return size
             }
         } ) )
 
-        $('#contact').append( $('<li/>').text( name ) )
+        if( count > 0 ) {
+            console.log( "Skipping contact: " + name )
+        } else {
+            Database.withDatabase( new Database.DatabaseHandlerVoid( {
+                doWithDatabase : function( db ) {
+                    var doc = new ODocument( db, 'Contact' )
+                    doc.field( 'name', name )
+                    doc.field( 'created_at', System.currentTimeMillis() )
+                    doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
+                    doc.save()
+                }
+            } ) )
+        }
+
+        if( typeof ChatWindow.contacted[ name ] == 'undefined' ) {
+            $('#contact').append( $('<li/>').text( name ) )
+            ChatWindow.contacted[ name ] = true
+        }
     }
 
 ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? ChatWindow.clearContacts :
     function() {
-        Database.withDatabase( new Database.DatabaseHandlerVoid ( {
-            doWithDatabase : function( db ) {
-                var doc = new ODocument( db, 'Contact' )
-                doc.field( 'name', name )
-                doc.field( 'created_at', System.currentTimeMillis() )
-                doc.field( 'chatlog', new HashSet(), OType.EMBEDDEDSET )
-                doc.save()
-            }
-        } ) )
+        try {
+            var OCommandSQL = Packages.com.orientechnologies.orient.core.sql.OCommandSQL
+
+            Database.withDatabase( new Database.DatabaseHandlerVoid( {
+                doWithDatabase : function( db ) {
+                    console.log( "empty: " + ( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) )
+                    if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
+                        console.log( "Deleting contacts" )
+                        db.command( new OCommandSQL( 'delete from Contact' ) ).execute( [] )
+                        //db.query( new OSQLSynchQuery( 'delete from Contact' ) )
+                        console.log( "Contacts deleted: " + typeof db )
+                    }
+                }
+            } ) )
+        } catch( ex ) {
+            console.log( "Error clearing contact: " + ex )
+            throw ex
+        }
+        $('#contact').empty()
     }
+
+ChatWindow.setUsername = typeof ChatWindow.setUsername != 'undefined' ? ChatWindow.setUsername :
+    function() {
+function setSelf( name ) {
+    applicationPort.addOwnEnd( applicationPort.hash( name ) )
+    self = name
+
+    // Database.withDatabase( new Database.DatabaseHandlerVoid( {
+    //     doWithDatabase : function( db ) {
+    //         var doc = new ODocument( db, 'Self' )
+    //         doc.field( 'name', self )
+    //         doc.field( 'created_at', new Date() )
+    //         doc.save()
+    //     }
+    // } )
+
+}
+
+if( ! isEmptyDatabase() ) {
+    setSelf( Database.withDatabase( new Database.DatabaseHandler( {
+        doWithDatabase : function( db ) {
+            var result = db.query( new OSQLSynchQuery( 'select * from Self' ), [] )
+            if( result.size() != 1 ) {
+                throw new IllegalStateException( 'More than one Self found in database!' )
+            }
+            return result.get( 0 ).field( 'name' )
+        }
+    } ) ) )
+}
+        
+    }
+
+$('button#clear').click( function() {
+    ChatWindow.clearContacts()
+} )
 
 $('button#add').click( function() {
     $('#new_contact').dialog( {
@@ -97,31 +147,29 @@ $('button#add').click( function() {
     } )
 } )
 
+$('button#username').click( function() {
+    $('#set_username').dialog( {
+        buttons : {
+            Add : function() {
+                hostApplet.eval( "ChatWindow.setUsername('" + $("#name").val() + "')" )
+                $('#new_contact').dialog( 'close' )
+            },
+            Cancel : function() {
+                $('#new_contact').dialog( 'close' )
+            },
+        }
+    } )
+} )
+
+
 var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
 var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
-var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
 
 var interestingEndsHolder = new InterestingEndsHolderImpl()
 var applicationPort = new ApplicationPortImpl()
 var self
 
-function setSelf( name ) {
-    applicationPort.addOwnEnd( applicationPort.hash( name ) )
-    self = name
-}
-
-if(! Database.isEmptyDatabase() ) {
-    setSelf( Database.withDatabase( new Database.DatabaseHandler( {
-        doWithDatabase : function( db ) {
-            var result = db.query( new OSQLSynchQuery( 'select * from Self' ) )
-            if( result.size() != 1 ) {
-                throw new IllegalStateException( 'More than one Self found in database!' )
-            }
-            return result.get( 0 ).field( 'name' )
-        }
-    } ) ) )
-}
-
+/*
 var SwitchListener = Packages.telehash.api.SwitchListener
 
 applicationPort.addSwitchListener( new SwitchListener( {
@@ -131,22 +179,24 @@ applicationPort.addSwitchListener( new SwitchListener( {
         }
     }
 } ) )
-applicationPort.startSwitch()
 
-var Iterator = java.util.Iterator
+//applicationPort.startSwitch()
 
-if( ! Database.isEmptyDatabase() ) {
-    Database.withDatabase( new Database.DatabaseHandlerVoid( {
-        doWithDatabase : function( db ) {
-            if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
-                var result = db.query( new OSQLSynchQuery( 'select * from Contact' ) )
-                var iterator = result.iterator()
-                while( iterator.hasNext() ) {
-                    var doc = iterator.next()
-                    var name = doc.field( 'name' )
-                    ChatWindow.addContact( name.toString() )
-                }
+console.log( "typeof Database.isEmptyDatabase = " + typeof Database.isEmptyDatabase )
+*/
+
+console.log( "isEmptyDatabase() = " + isEmptyDatabase() )
+
+Database.withDatabase( new Database.DatabaseHandlerVoid( {
+    doWithDatabase : function( db ) {
+        if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
+            var result = db.query( new OSQLSynchQuery( 'select * from Contact' ), [] )
+            var iterator = result.iterator()
+            while( iterator.hasNext() ) {
+                var doc = iterator.next()
+                var name = doc.field( 'name' )
+                ChatWindow.addContact( name.toString() )
             }
         }
-    } ) )
-}
+    }
+} ) )

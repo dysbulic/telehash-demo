@@ -114,15 +114,12 @@
 -->
     <signjar jar="${jar}" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/telehash/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
-<!--
     <signjar jar="lib/telehash/clojure/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/telehash/clojure/chat/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/core/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/common/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/client/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/tools/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
-    <signjar jar="lib/htmlunit/core/js/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
--->
   </target>
 
   <target name="javadoc" depends="setup">

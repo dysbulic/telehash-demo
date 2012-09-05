@@ -1,4 +1,4 @@
-mimis = typeof mimis == 'undefined' ? {} : mimis
+mimis = typeof mimis != 'undefined' ? mimis : {}
 
 mimis.objToJSObject = typeof mimis.objToJSObject != 'undefined' ? mimis.objToJSObject :
     function objToJSObject( obj ) {
@@ -32,3 +32,35 @@ mimis.objArrayToJSObjectArray = typeof mimis.objArrayToJSObjectArray != 'undefin
         return out
     }
 
+mimis.jsonToJQuery = typeof mimis.jsonToJQuery != 'undefined' ? mimis.jsonToJQuery :
+    function( json, $parent ) {
+        function objSize( obj ) {
+            var size = 0, key
+            for( key in obj ) {
+                if( obj.hasOwnProperty( key ) ) size++
+            }
+            return size
+        }
+        if( typeof $parent == 'undefined' && objSize( json ) > 1 ) {
+            return mimis.jsonToJQuery( json, $('<div/>') )
+        }
+        for( prop in json ) {
+            if( prop[0] == '<' ) {
+                elem = prop
+            } else {
+                elem = '<' + prop + '/>'
+            }
+            var $new = $(elem)
+            if( typeof json[prop] == "string" ) {
+                $new.text( json[prop] )
+            } else if( typeof json[prop] == "object" ) {
+                mimis.jsonToJQuery( json[prop], $new )
+            }
+            if( typeof $parent == 'undefined' ) {
+                $parent = $new
+            } else {
+                $parent.append( $new )
+            }
+        }
+        return $parent
+    }

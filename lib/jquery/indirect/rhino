@@ -38,6 +38,11 @@ var $ = function( arg1 ) {
                 $obj.call( 'appendByGUID', [ $elem.guid ] )
                 return $ret
             },
+            prepend: function( $elem ) {
+                console.log( "Prepending: " + $elem + " : " + $elem.guid + "\n" )
+                $obj.call( 'prependByGUID', [ $elem.guid ] )
+                return $ret
+            },
             empty: function() {
                 var args = Array.prototype.slice.call( arguments )
                 $obj.call( 'empty', args )
