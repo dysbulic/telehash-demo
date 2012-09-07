@@ -5,8 +5,6 @@
  * hostApplet is a reference to the applet
  */
 
-console.log( 'Entering: jquery/indirect/' )
-
 var JSObject = Packages.netscape.javascript.JSObject
 
 var clickHandlers = [] // Limit 1, atm
@@ -14,7 +12,7 @@ var $rets = []
 
 function guidClicked( guid ) {
     var handler = clickHandlers[ guid ]
-    if( handler != undefined ) {
+    if( typeof handler != 'undefined' ) {
         handler.call( $rets[ guid ] )
     } else {
         console.log( "Couldn't get handler: " + guid + " : " + clickHandlers.length + "\n" )
@@ -34,12 +32,10 @@ var $ = function( arg1 ) {
 
         var $ret = {
             append: function( $elem ) {
-                console.log( "Appending: " + $elem + " : " + $elem.guid + "\n" )
                 $obj.call( 'appendByGUID', [ $elem.guid ] )
                 return $ret
             },
             prepend: function( $elem ) {
-                console.log( "Prepending: " + $elem + " : " + $elem.guid + "\n" )
                 $obj.call( 'prependByGUID', [ $elem.guid ] )
                 return $ret
             },

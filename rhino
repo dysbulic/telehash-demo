@@ -1,19 +1,21 @@
-$('body').prepend( mimis.jsonToJQuery(
+('body').prepend( mimis.jsonToJQuery(
     { 'div id="contacts"' : {
-        p : 'Contacts',
+        'p' : 'Contacts',
         'ul id="contact"' : {},
-        'button id="add"': 'Add Contact',
-        'button id="clear"': 'Clear Contacts',
-        'button id="username"': 'Set Username',
+        'div class="btn-group"' : {
+            'button id="add" class="btn"' : 'Add Contact',
+            'button id="clear" class="btn"' : 'Clear Contacts',
+        },
+        'button id="username" class="btn"': 'Set Username',
     } }
 ) )
 
-$('body').prepend( mimis.jsonToJQuery(
-    { 'div id="new_contact" class="hidden" title="Add Contact"': {
+$('body').prepend( mimis.jsonToJQuery( {
+    'div id="new_contact" class="hidden" title="Add Contact"': {
         'label for="name"' : 'Name:',
         'input type="text" id="name"' : {}
-    } }
-) )
+    }
+} ) )
 
 $('body').prepend( mimis.jsonToJQuery(
     { 'div id="set_username" class="hidden" title="Set Username"': {
@@ -99,34 +101,27 @@ ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? Chat
     }
 
 ChatWindow.setUsername = typeof ChatWindow.setUsername != 'undefined' ? ChatWindow.setUsername :
-    function() {
-function setSelf( name ) {
-    applicationPort.addOwnEnd( applicationPort.hash( name ) )
-    self = name
-
-    // Database.withDatabase( new Database.DatabaseHandlerVoid( {
-    //     doWithDatabase : function( db ) {
-    //         var doc = new ODocument( db, 'Self' )
-    //         doc.field( 'name', self )
-    //         doc.field( 'created_at', new Date() )
-    //         doc.save()
-    //     }
-    // } )
-
-}
-
-if( ! isEmptyDatabase() ) {
-    setSelf( Database.withDatabase( new Database.DatabaseHandler( {
-        doWithDatabase : function( db ) {
-            var result = db.query( new OSQLSynchQuery( 'select * from Self' ), [] )
-            if( result.size() != 1 ) {
-                throw new IllegalStateException( 'More than one Self found in database!' )
-            }
-            return result.get( 0 ).field( 'name' )
-        }
-    } ) ) )
-}
+    function( name ) {
+        applicationPort.addOwnEnd( applicationPort.hash( name ) )
+        self = name
         
+        // Database.withDatabase( new Database.DatabaseHandlerVoid( {
+        //     doWithDatabase : function( db ) {
+        //         var doc = new ODocument( db, 'Self' )
+        //         doc.field( 'name', self )
+        //         doc.field( 'created_at', new Date() )
+        //         doc.save()
+        //     }
+        // } )
+        Database.withDatabase( new Database.DatabaseHandler( {
+            doWithDatabase : function( db ) {
+                var result = db.query( new OSQLSynchQuery( 'select * from Self' ), [] )
+                if( result.size() != 1 ) {
+                    throw new IllegalStateException( 'More than one Self found in database!' )
+                }
+                return result.get( 0 ).field( 'name' )
+            }
+        } ) )
     }
 
 $('button#clear').click( function() {
@@ -134,6 +129,7 @@ $('button#clear').click( function() {
 } )
 
 $('button#add').click( function() {
+    console.log( "Adding" )
     $('#new_contact').dialog( {
         buttons : {
             Add : function() {
@@ -152,10 +148,10 @@ $('button#username').click( function() {
         buttons : {
             Add : function() {
                 hostApplet.eval( "ChatWindow.setUsername('" + $("#name").val() + "')" )
-                $('#new_contact').dialog( 'close' )
+                $('#set_username').dialog( 'close' )
             },
             Cancel : function() {
-                $('#new_contact').dialog( 'close' )
+                $('#set_username').dialog( 'close' )
             },
         }
     } )
@@ -169,7 +165,6 @@ var interestingEndsHolder = new InterestingEndsHolderImpl()
 var applicationPort = new ApplicationPortImpl()
 var self
 
-/*
 var SwitchListener = Packages.telehash.api.SwitchListener
 
 applicationPort.addSwitchListener( new SwitchListener( {
@@ -183,7 +178,6 @@ applicationPort.addSwitchListener( new SwitchListener( {
 //applicationPort.startSwitch()
 
 console.log( "typeof Database.isEmptyDatabase = " + typeof Database.isEmptyDatabase )
-*/
 
 console.log( "isEmptyDatabase() = " + isEmptyDatabase() )
 
