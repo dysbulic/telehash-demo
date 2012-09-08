@@ -1,14 +1,19 @@
-('body').prepend( mimis.jsonToJQuery(
-    { 'div id="contacts"' : {
-        'p' : 'Contacts',
+console.log( 'Pre-preprend' )
+$('body').prepend( mimis.jsonToJQuery( {
+    'div id="contacts"' : {
+        p : 'Contacts',
         'ul id="contact"' : {},
         'div class="btn-group"' : {
             'button id="add" class="btn"' : 'Add Contact',
             'button id="clear" class="btn"' : 'Clear Contacts',
         },
         'button id="username" class="btn"': 'Set Username',
-    } }
-) )
+    }
+} ) )
+
+$('body').prepend( mimis.jsonToJQuery( {
+    'div id="username"' : {}
+} ) )
 
 $('body').prepend( mimis.jsonToJQuery( {
     'div id="new_contact" class="hidden" title="Add Contact"': {
@@ -23,11 +28,14 @@ $('body').prepend( mimis.jsonToJQuery(
         'input type="text" id="name"' : {}
     } }
 ) )
+console.log( 'Post-preprend' )
 
 var Database = Packages.telehash.samples.simplechat.Database
 var OSQLSynchQuery = Packages.com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
+var System = java.lang.System
 
-function isEmptyDatabase() {
+var isEmptyDatabase = function() {
     return Database.withDatabase( new Database.DatabaseHandler( {
         doWithDatabase : function( db ) {
             return db.getMetadata().getSchema().getClass( 'Self' ) == null
@@ -41,9 +49,7 @@ ChatWindow.contacted = typeof ChatWindow.contacted != 'undefined' ? ChatWindow.c
 
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
-        var System = java.lang.System
         var HashSet = java.util.HashSet
-        var ODocument = Packages.com.orientechnologies.orient.core.record.impl.ODocument
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
 
         var count = Database.withDatabase( new Database.DatabaseHandler( {
@@ -84,7 +90,7 @@ ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? Chat
 
             Database.withDatabase( new Database.DatabaseHandlerVoid( {
                 doWithDatabase : function( db ) {
-                    console.log( "empty: " + ( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) )
+                    console.log( "empty: " + ( db.getMetadata().getSchema().getClass( 'Contact' ) == null ) )
                     if( db.getMetadata().getSchema().getClass( 'Contact' ) != null ) {
                         console.log( "Deleting contacts" )
                         db.command( new OCommandSQL( 'delete from Contact' ) ).execute( [] )
@@ -100,40 +106,56 @@ ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? Chat
         $('#contact').empty()
     }
 
-ChatWindow.setUsername = typeof ChatWindow.setUsername != 'undefined' ? ChatWindow.setUsername :
-    function( name ) {
-        applicationPort.addOwnEnd( applicationPort.hash( name ) )
-        self = name
-        
-        // Database.withDatabase( new Database.DatabaseHandlerVoid( {
-        //     doWithDatabase : function( db ) {
-        //         var doc = new ODocument( db, 'Self' )
-        //         doc.field( 'name', self )
-        //         doc.field( 'created_at', new Date() )
-        //         doc.save()
-        //     }
-        // } )
-        Database.withDatabase( new Database.DatabaseHandler( {
-            doWithDatabase : function( db ) {
-                var result = db.query( new OSQLSynchQuery( 'select * from Self' ), [] )
-                if( result.size() != 1 ) {
-                    throw new IllegalStateException( 'More than one Self found in database!' )
-                }
-                return result.get( 0 ).field( 'name' )
+ChatWindow.user = typeof ChatWindow.user != 'undefined' ? ChatWindow.user : {}
+ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.user.name :
+    ( function() {
+            ChatWindow.user.__defineGetter__( 'name', function() {
+                return Database.withDatabase( new Database.DatabaseHandler( {
+                    doWithDatabase : function( db ) {
+                        if( db.getMetadata().getSchema().getClass( 'Self' ) != null ) {
+                            var result = db.query( new OSQLSynchQuery( 'select * from Self order by created_at desc limit 1' ), [] )
+                            console.log( "result size: " + result.size() )
+                            if( result.size() == 0 ) {
+                                return undefined
+                            }
+                            console.log( "Name: " + result.get( 0 ).field( 'created_at' ) )
+                            return result.get( 0 ).field( 'name' )
+                        }
+                    }
+                } ) )
+            } )
+        ChatWindow.user.__defineSetter__( 'name', function( name ) {
+            if( typeof name != 'undefined' && ChatWindow.user.name != name ) {
+                Database.withDatabase( new Database.DatabaseHandler( {
+                    doWithDatabase : function( db ) {
+                        Database.withDatabase( new Database.DatabaseHandlerVoid( {
+                            doWithDatabase : function( db ) {
+                                var doc = new ODocument( db, 'Self' )
+                                doc.field( 'name', name )
+                                doc.field( 'created_at', System.currentTimeMillis() )
+                                doc.save()
+                            }
+                        } ) )
+                    }
+                } ) )
             }
-        } ) )
-    }
+            $('#username').text( "Connected As: " + name )
+            return name
+        } )
+    } )()
+console.log( "ChatWindow.user.name = " + ChatWindow.user.name )
+ChatWindow.user.name = ChatWindow.user.name // Load from db
 
 $('button#clear').click( function() {
     ChatWindow.clearContacts()
 } )
 
 $('button#add').click( function() {
-    console.log( "Adding" )
     $('#new_contact').dialog( {
         buttons : {
             Add : function() {
-                hostApplet.eval( "ChatWindow.addContact('" + $("#name").val() + "')" )
+                hostApplet.eval( "ChatWindow.addContact('" + $(this).children( '#name' ).val() + "')" )
+                $(this).children( '#name' ).text( '' )
                 $('#new_contact').dialog( 'close' )
             },
             Cancel : function() {
@@ -147,7 +169,8 @@ $('button#username').click( function() {
     $('#set_username').dialog( {
         buttons : {
             Add : function() {
-                hostApplet.eval( "ChatWindow.setUsername('" + $("#name").val() + "')" )
+                hostApplet.eval( "ChatWindow.user.name = '" + $(this).children( '#name' ).val() + "'" )
+                $(this).children( '#name' ).text( '' )
                 $('#set_username').dialog( 'close' )
             },
             Cancel : function() {
@@ -176,10 +199,6 @@ applicationPort.addSwitchListener( new SwitchListener( {
 } ) )
 
 //applicationPort.startSwitch()
-
-console.log( "typeof Database.isEmptyDatabase = " + typeof Database.isEmptyDatabase )
-
-console.log( "isEmptyDatabase() = " + isEmptyDatabase() )
 
 Database.withDatabase( new Database.DatabaseHandlerVoid( {
     doWithDatabase : function( db ) {

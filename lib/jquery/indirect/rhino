@@ -36,6 +36,7 @@ var $ = function( arg1 ) {
                 return $ret
             },
             prepend: function( $elem ) {
+                console.log( '/lib/jquery/indirect/rhino/$/prepend/prependByGUID: ' + $elem.guid )
                 $obj.call( 'prependByGUID', [ $elem.guid ] )
                 return $ret
             },
