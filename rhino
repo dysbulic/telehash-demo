@@ -1,14 +1,20 @@
 console.log( 'Pre-preprend' )
 $('body').prepend( mimis.jsonToJQuery( {
-    'div id="contacts"' : {
-        p : 'Contacts',
-        'ul id="contact"' : {},
-        'div class="btn-group"' : {
-            'button id="add" class="btn"' : 'Add Contact',
-            'button id="clear" class="btn"' : 'Clear Contacts',
+    'div id="window" class="row"' : {
+        'div id="log" class="span8"' : {
+            'input type="text" id="message"' : {},
+            'button id="send" class="btn"' : 'Send Message',
         },
-        'button id="username" class="btn"': 'Set Username',
-    }
+        'div id="contacts" class="span4"' : {
+            p : 'Contacts',
+            'ul id="contact"' : {},
+            'div class="btn-group"' : {
+                'button id="add" class="btn"' : 'Add Contact',
+                'button id="clear" class="btn"' : 'Clear Contacts',
+            },
+            'button id="username" class="btn"': 'Set Username',
+        },
+    },
 } ) )
 
 $('body').prepend( mimis.jsonToJQuery( {
@@ -83,6 +89,21 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
         }
     }
 
+$('button#add').click( function() {
+    $('#new_contact').dialog( {
+        buttons : {
+            Add : function() {
+                hostApplet.eval( "ChatWindow.addContact('" + $(this).children( '#name' ).val() + "')" )
+                $(this).children( '#name' ).text( '' )
+                $('#new_contact').dialog( 'close' )
+            },
+            Cancel : function() {
+                $('#new_contact').dialog( 'close' )
+            },
+        }
+    } )
+} )
+
 ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? ChatWindow.clearContacts :
     function() {
         try {
@@ -105,6 +126,10 @@ ChatWindow.clearContacts = typeof ChatWindow.clearContacts != 'undefined' ? Chat
         }
         $('#contact').empty()
     }
+
+$('button#clear').click( function() {
+    ChatWindow.clearContacts()
+} )
 
 ChatWindow.user = typeof ChatWindow.user != 'undefined' ? ChatWindow.user : {}
 ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.user.name :
@@ -143,27 +168,9 @@ ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.u
             return name
         } )
     } )()
+
 console.log( "ChatWindow.user.name = " + ChatWindow.user.name )
 ChatWindow.user.name = ChatWindow.user.name // Load from db
-
-$('button#clear').click( function() {
-    ChatWindow.clearContacts()
-} )
-
-$('button#add').click( function() {
-    $('#new_contact').dialog( {
-        buttons : {
-            Add : function() {
-                hostApplet.eval( "ChatWindow.addContact('" + $(this).children( '#name' ).val() + "')" )
-                $(this).children( '#name' ).text( '' )
-                $('#new_contact').dialog( 'close' )
-            },
-            Cancel : function() {
-                $('#new_contact').dialog( 'close' )
-            },
-        }
-    } )
-} )
 
 $('button#username').click( function() {
     $('#set_username').dialog( {
@@ -180,12 +187,59 @@ $('button#username').click( function() {
     } )
 } )
 
-
 var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
 var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
 
 var interestingEndsHolder = new InterestingEndsHolderImpl()
 var applicationPort = new ApplicationPortImpl()
+
+var UUID = java.util.UUID
+
+ChatWindow.sendChat = typeof ChatWindow.sendChat != 'undefined' ? ChatWindow.sendChat :
+    function( msg, username ) {
+        if( msg != null && msg.length > 0 && msg.length <= 1000 ) {
+            var message = new HashMap()
+            var timestamp = System.currentTimeMillis()
+            var msgid = UUID.randomUUID().toString()
+            message.put( 'msg', msg )
+            message.put( 'ts', timestamp )
+            message.put( 'msgid', msgid )
+            message.put( 'snip', msg.length )
+
+            var telex = new HashMap()
+            telex.put("simplechat", message)
+
+            Database.withDatabase( new Database.DatabaseHandlerVoid() {
+                doWithDatabase : function( db ) {
+                    var result = db.query( new OSQLSynchQuery( "select * from Contact where name = '" + username + "'" ) )
+                    if( result.size() != 1 ) {
+                        throw "Contact " + username + " not found in database"
+                    }
+                    var contact = result.get( 0 )
+                    var chatlog = contact.field( 'chatlog' )
+                    var chatlog_entry = new ODocument( db )
+                    chatlog_entry
+                        .field( 'msg', msg )
+                        .field( 'ts', timestamp )
+                        .field( 'msgid', msgid )
+                        .field( 'snip', msg.length )
+                    chatlog.add( chatlog_entry )
+                    contact.save()
+                }
+            } )
+            var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( name ) )
+            _switch.sendTelex( interestingEndsHolder.hash( ChatWindow.user.name ), telex )
+            //chatTextArea.append("Me: " + msg + "\n");
+        }
+        if( msg != null && msg.length > 1000 ) {
+            console.log( "Message Too Long: " + msg )
+        }
+    }
+
+$('button#send').click( function() {
+    console.log( "Message: " + $('#message').val() )
+} )
+
 var self
 
 var SwitchListener = Packages.telehash.api.SwitchListener

@@ -1,6 +1,7 @@
 @import url('http://code.jquery.com/ui/1.8.23/themes/base/jquery-ui.css');
-/*
+
 @import url('http://twitter.github.com/bootstrap/assets/css/bootstrap.css');
+/*
 @import url('http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css');
 */
 
@@ -9,9 +10,6 @@ html, body {
 }
 
 #contacts {
-    float: right;
-    width: 300px;
-    height: 100%;
     border-left: solid;
     margin: 0;
 }
@@ -20,11 +18,20 @@ html, body {
     display: none;
 }
 
-html, body, #contacts, #test {
+html, body, #window, #contacts, #log {
     height: 100%;
     min-height: 100%;
 }
 
 #test {
     border: 2px solid;
+}
+
+#log {
+    position: relative;
+}
+
+#message {
+    position: absolute;
+    bottom: 0;
 }
