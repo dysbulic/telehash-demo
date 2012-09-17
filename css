@@ -31,7 +31,11 @@ html, body, #window, #contacts, #log {
     position: relative;
 }
 
-#message {
+#message, #send {
     position: absolute;
-    bottom: 0;
+    bottom: 10px;
+}
+
+#send {
+    right: 10px;
 }

@@ -1,9 +1,9 @@
 console.log( 'Pre-preprend' )
 $('body').prepend( mimis.jsonToJQuery( {
     'div id="window" class="row"' : {
-        'div id="log" class="span8"' : {
-            'input type="text" id="message"' : {},
-            'button id="send" class="btn"' : 'Send Message',
+        'div id="log" class="span8 row"' : {
+            'input type="text" id="message" class="span6"' : {},
+            'button id="send" class="btn span2"' : 'Send Message',
         },
         'div id="contacts" class="span4"' : {
             p : 'Contacts',
@@ -53,11 +53,17 @@ ChatWindow = typeof ChatWindow != 'undefined' ? ChatWindow : {}
 
 ChatWindow.contacted = typeof ChatWindow.contacted != 'undefined' ? ChatWindow.contacts : {}
 
+var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
+var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
+
+var interestingEndsHolder = new InterestingEndsHolderImpl()
+var applicationPort = new ApplicationPortImpl()
+
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
         var HashSet = java.util.HashSet
         var OType = Packages.com.orientechnologies.orient.core.metadata.schema.OType
-
+        
         var count = Database.withDatabase( new Database.DatabaseHandler( {
             doWithDatabase : function( db ) {
                 var size = 0
@@ -68,7 +74,7 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
                 return size
             }
         } ) )
-
+        
         if( count > 0 ) {
             console.log( "Skipping contact: " + name )
         } else {
@@ -83,9 +89,32 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
             } ) )
         }
 
+        console.log( "Adding End: " + applicationPort.hash( name ) )
+        applicationPort.addOtherEnd( applicationPort.hash( name ) )
+        
         if( typeof ChatWindow.contacted[ name ] == 'undefined' ) {
-            $('#contact').append( $('<li/>').text( name ) )
+            var $input = $('<input type="checkbox"/>')
+            var $text = $('<span/>').text( name )
+            $('#contact').append( $('<li/>').append( $input ).append( $text ) )
             ChatWindow.contacted[ name ] = true
+
+            console.log( "Getting switch for: " + interestingEndsHolder.hash( name ) )
+            var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( name ) )
+            console.log( _switch )
+            if( _switch == null ) {
+                console.log( "Couldn't get switch for: " + name )
+            } else {
+                var telexListenerScope = _switch.addTelexListener( {
+                    receivedTelex : function( telex ) {
+                        console.log( 'Recieved telex:' )
+                        console.log( telex )
+                        if( telex.containsKey( 'simplechat' ) ) {
+                            var chat_telex = telex.get( 'simplechat' )
+                            $('#log').append( $('<p/>').text( name + ": " + chat_telex.get( 'msg' ).toString() ) )
+                        }
+                    }
+                } )
+            }
         }
     }
 
@@ -94,7 +123,7 @@ $('button#add').click( function() {
         buttons : {
             Add : function() {
                 hostApplet.eval( "ChatWindow.addContact('" + $(this).children( '#name' ).val() + "')" )
-                $(this).children( '#name' ).text( '' )
+                $(this).children( '#name' ).val( '' )
                 $('#new_contact').dialog( 'close' )
             },
             Cancel : function() {
@@ -164,6 +193,7 @@ ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.u
                     }
                 } ) )
             }
+            applicationPort.addOwnEnd( applicationPort.hash( name ) )
             $('#username').text( "Connected As: " + name )
             return name
         } )
@@ -177,7 +207,7 @@ $('button#username').click( function() {
         buttons : {
             Add : function() {
                 hostApplet.eval( "ChatWindow.user.name = '" + $(this).children( '#name' ).val() + "'" )
-                $(this).children( '#name' ).text( '' )
+                $(this).children( '#name' ).val( '' )
                 $('#set_username').dialog( 'close' )
             },
             Cancel : function() {
@@ -187,16 +217,11 @@ $('button#username').click( function() {
     } )
 } )
 
-var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
-var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
-
-var interestingEndsHolder = new InterestingEndsHolderImpl()
-var applicationPort = new ApplicationPortImpl()
-
 var UUID = java.util.UUID
 
-ChatWindow.sendChat = typeof ChatWindow.sendChat != 'undefined' ? ChatWindow.sendChat :
-    function( msg, username ) {
+ChatWindow.sendMessage = typeof ChatWindow.sendMessage != 'undefined' ? ChatWindow.sendMessage :
+    function( username, msg ) {
+        console.log( "Sending: " + username + ": " + msg )
         if( msg != null && msg.length > 0 && msg.length <= 1000 ) {
             var message = new HashMap()
             var timestamp = System.currentTimeMillis()
@@ -207,7 +232,7 @@ ChatWindow.sendChat = typeof ChatWindow.sendChat != 'undefined' ? ChatWindow.sen
             message.put( 'snip', msg.length )
 
             var telex = new HashMap()
-            telex.put("simplechat", message)
+            telex.put( 'simplechat', message )
 
             Database.withDatabase( new Database.DatabaseHandlerVoid() {
                 doWithDatabase : function( db ) {
@@ -227,32 +252,46 @@ ChatWindow.sendChat = typeof ChatWindow.sendChat != 'undefined' ? ChatWindow.sen
                     contact.save()
                 }
             } )
-            var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( name ) )
+            var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( username ) )
             _switch.sendTelex( interestingEndsHolder.hash( ChatWindow.user.name ), telex )
-            //chatTextArea.append("Me: " + msg + "\n");
         }
         if( msg != null && msg.length > 1000 ) {
             console.log( "Message Too Long: " + msg )
         }
     }
-
+        
 $('button#send').click( function() {
-    console.log( "Message: " + $('#message').val() )
+    var message = $('#message').val()
+    $('#message').val( '' )
+    var func = mimis.objToJSObject( function() {
+        var usernames = []
+        $('#contact').find( 'input' ).each( function() {
+            if( $(this).is( ':checked' ) ) {
+                usernames.push( $(this).parent().children( 'span' ).text() )
+            }
+        } )
+        return usernames
+    } )
+    var ret = func.call( 'call', [] )
+    var length = ret.getMember( 'length' ).intValue()
+    for( var i = 0; i < length; i++ ) {
+        var name = ret.getSlot( i )
+        ChatWindow.sendMessage( name, message )
+    }
 } )
-
-var self
 
 var SwitchListener = Packages.telehash.api.SwitchListener
 
 applicationPort.addSwitchListener( new SwitchListener( {
     counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
+        console.log( "rhino/counterpartySwitchForEndFound: " + string )
         if( ! applicationPort.hash( self ).equals( string ) ) {
             interestingEndsHolder.put( string, counterpartySwitch )
         }
     }
 } ) )
 
-//applicationPort.startSwitch()
+applicationPort.startSwitch()
 
 Database.withDatabase( new Database.DatabaseHandlerVoid( {
     doWithDatabase : function( db ) {

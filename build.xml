@@ -120,6 +120,7 @@
     <signjar jar="lib/orientDB/common/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/client/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
     <signjar jar="lib/orientDB/tools/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
+    <signjar jar="lib/netbeans/modules/AbsoluteLayout/jar" alias="${jar.key.alias}" storepass="${jar.key.pass}" keystore="${jar.key.store}" />
   </target>
 
   <target name="javadoc" depends="setup">
