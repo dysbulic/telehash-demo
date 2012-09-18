@@ -10,6 +10,20 @@ console.log = typeof console.log != 'undefined' ? console.log :
             var console = window.getMember( 'console' )
             var log = console.call( 'log', mimis.objArrayToJSObjectArray( args ) )
         } else {
-            print( 'Count not get window' )
+            print( 'Could not get window' )
+        }
+    }
+
+console.error = typeof console.error != 'undefined' ? console.error :
+    function() {
+        var JSObject = Packages.netscape.javascript.JSObject
+        var window = JSObject.getWindow( hostApplet )
+
+        if( window ) {
+            var args = Array.prototype.slice.call( arguments )
+            var console = window.getMember( 'console' )
+            var error = console.call( 'error', mimis.objArrayToJSObjectArray( args ) )
+        } else {
+            print( 'Could not get window' )
         }
     }

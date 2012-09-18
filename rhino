@@ -100,9 +100,8 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
 
             console.log( "Getting switch for: " + interestingEndsHolder.hash( name ) )
             var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( name ) )
-            console.log( _switch )
             if( _switch == null ) {
-                console.log( "Couldn't get switch for: " + name )
+                console.error( "Couldn't get switch for: " + name )
             } else {
                 var telexListenerScope = _switch.addTelexListener( {
                     receivedTelex : function( telex ) {
@@ -160,6 +159,8 @@ $('button#clear').click( function() {
     ChatWindow.clearContacts()
 } )
 
+var Date = java.util.Date
+
 ChatWindow.user = typeof ChatWindow.user != 'undefined' ? ChatWindow.user : {}
 ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.user.name :
     ( function() {
@@ -193,14 +194,27 @@ ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.u
                     }
                 } ) )
             }
-            applicationPort.addOwnEnd( applicationPort.hash( name ) )
             $('#username').text( "Connected As: " + name )
             return name
         } )
     } )()
 
+var SwitchListener = Packages.telehash.api.SwitchListener
+
+applicationPort.addSwitchListener( new SwitchListener( {
+    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
+        console.log( "rhino/counterpartySwitchForEndFound: " + string )
+        if( ! applicationPort.hash( self ).equals( string ) ) {
+            interestingEndsHolder.put( string, counterpartySwitch )
+        }
+    }
+} ) )
+
+applicationPort.startSwitch()
+
 console.log( "ChatWindow.user.name = " + ChatWindow.user.name )
 ChatWindow.user.name = ChatWindow.user.name // Load from db
+applicationPort.addOwnEnd( applicationPort.hash( ChatWindow.user.name ) )
 
 $('button#username').click( function() {
     $('#set_username').dialog( {
@@ -218,11 +232,13 @@ $('button#username').click( function() {
 } )
 
 var UUID = java.util.UUID
+var HashMap = java.util.HashMap
 
 ChatWindow.sendMessage = typeof ChatWindow.sendMessage != 'undefined' ? ChatWindow.sendMessage :
     function( username, msg ) {
-        console.log( "Sending: " + username + ": " + msg )
-        if( msg != null && msg.length > 0 && msg.length <= 1000 ) {
+        if( msg != null && msg.length() > 0 && msg.length() <= 1000 ) {
+            console.log( "Sending: " + username + ": " + msg )
+
             var message = new HashMap()
             var timestamp = System.currentTimeMillis()
             var msgid = UUID.randomUUID().toString()
@@ -230,9 +246,6 @@ ChatWindow.sendMessage = typeof ChatWindow.sendMessage != 'undefined' ? ChatWind
             message.put( 'ts', timestamp )
             message.put( 'msgid', msgid )
             message.put( 'snip', msg.length )
-
-            var telex = new HashMap()
-            telex.put( 'simplechat', message )
 
             Database.withDatabase( new Database.DatabaseHandlerVoid() {
                 doWithDatabase : function( db ) {
@@ -252,8 +265,17 @@ ChatWindow.sendMessage = typeof ChatWindow.sendMessage != 'undefined' ? ChatWind
                     contact.save()
                 }
             } )
+
+            var telex = new HashMap()
+            telex.put( 'simplechat', message )
+
+            console.log( "Getting switch for: " + interestingEndsHolder.hash( username ) )
             var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( username ) )
-            _switch.sendTelex( interestingEndsHolder.hash( ChatWindow.user.name ), telex )
+            if( _switch == null ) {
+                console.error( "Couldn't get switch for: " + username )
+            } else {
+                _switch.sendTelex( interestingEndsHolder.hash( ChatWindow.user.name ), telex )
+            }
         }
         if( msg != null && msg.length > 1000 ) {
             console.log( "Message Too Long: " + msg )
@@ -279,19 +301,6 @@ $('button#send').click( function() {
         ChatWindow.sendMessage( name, message )
     }
 } )
-
-var SwitchListener = Packages.telehash.api.SwitchListener
-
-applicationPort.addSwitchListener( new SwitchListener( {
-    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
-        console.log( "rhino/counterpartySwitchForEndFound: " + string )
-        if( ! applicationPort.hash( self ).equals( string ) ) {
-            interestingEndsHolder.put( string, counterpartySwitch )
-        }
-    }
-} ) )
-
-applicationPort.startSwitch()
 
 Database.withDatabase( new Database.DatabaseHandlerVoid( {
     doWithDatabase : function( db ) {
