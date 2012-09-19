@@ -1,0 +1,43 @@
+var username = 'Will'
+var contactName = 'Bob'
+
+var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
+var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
+
+var interestingEndsHolder = new InterestingEndsHolderImpl()
+var applicationPort = new ApplicationPortImpl()
+
+var SwitchListener = Packages.telehash.api.SwitchListener
+
+applicationPort.addSwitchListener( new SwitchListener( {
+    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
+        print( "counterpartySwitchForEndFound: " + string )
+        if( ! applicationPort.hash( self ).equals( string ) ) {
+            interestingEndsHolder.put( string, counterpartySwitch )
+        }
+    }
+} ) )
+
+applicationPort.startSwitch()
+
+print( "Adding Own End: " + applicationPort.hash( username ) )
+applicationPort.addOwnEnd( applicationPort.hash( username ) )
+
+print( "Adding Other End: " + applicationPort.hash( contactName ) )
+applicationPort.addOtherEnd( applicationPort.hash( contactName ) )
+
+print( "Getting switch for: " + interestingEndsHolder.hash( contactName ) )
+var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( contactName ) )
+if( _switch == null ) {
+    print( "Couldn't get switch for: " + contactName )
+} else {
+    var telexListenerScope = _switch.addTelexListener( {
+        receivedTelex : function( telex ) {
+            print( 'Recieved telex:' )
+            if( telex.containsKey( 'simplechat' ) ) {
+                var chat_telex = telex.get( 'simplechat' )
+                print( name + ": " + chat_telex.get( 'msg' ).toString() )
+            }
+        }
+    } )
+}

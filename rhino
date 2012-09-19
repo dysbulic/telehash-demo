@@ -59,6 +59,77 @@ var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
 var interestingEndsHolder = new InterestingEndsHolderImpl()
 var applicationPort = new ApplicationPortImpl()
 
+var SwitchListener = Packages.telehash.api.SwitchListener
+
+applicationPort.addSwitchListener( new SwitchListener( {
+    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
+        console.log( "counterpartySwitchForEndFound: " + string )
+        if( ! applicationPort.hash( self ).equals( string ) ) {
+            interestingEndsHolder.put( string, counterpartySwitch )
+        }
+    }
+} ) )
+
+applicationPort.startSwitch()
+
+ChatWindow.user = typeof ChatWindow.user != 'undefined' ? ChatWindow.user : {}
+ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.user.name :
+    ( function() {
+            ChatWindow.user.__defineGetter__( 'name', function() {
+                return Database.withDatabase( new Database.DatabaseHandler( {
+                    doWithDatabase : function( db ) {
+                        if( db.getMetadata().getSchema().getClass( 'Self' ) != null ) {
+                            var result = db.query( new OSQLSynchQuery( 'select * from Self order by created_at desc limit 1' ), [] )
+                            if( result.size() == 0 ) {
+                                return undefined
+                            }
+                            console.log( "Name: " + result.get( 0 ).field( 'created_at' ) )
+                            return result.get( 0 ).field( 'name' )
+                        }
+                    }
+                } ) )
+            } )
+        ChatWindow.user.__defineSetter__( 'name', function( name ) {
+            if( typeof name != 'undefined' && ChatWindow.user.name != name ) {
+                Database.withDatabase( new Database.DatabaseHandler( {
+                    doWithDatabase : function( db ) {
+                        Database.withDatabase( new Database.DatabaseHandlerVoid( {
+                            doWithDatabase : function( db ) {
+                                var doc = new ODocument( db, 'Self' )
+                                doc.field( 'name', name )
+                                doc.field( 'created_at', System.currentTimeMillis() )
+                                doc.save()
+                            }
+                        } ) )
+                    }
+                } ) )
+            }
+            $('#username').text( "Connected As: " + name )
+
+            console.log( "Setting Own End: " + applicationPort.hash( name ) )
+            applicationPort.addOwnEnd( applicationPort.hash( name ) )
+            
+            return name
+        } )
+    } )()
+
+ChatWindow.user.name = ChatWindow.user.name // Load from db
+
+$('button#username').click( function() {
+    $('#set_username').dialog( {
+        buttons : {
+            Add : function() {
+                hostApplet.eval( "ChatWindow.user.name = '" + $(this).children( '#name' ).val() + "'" )
+                $(this).children( '#name' ).val( '' )
+                $('#set_username').dialog( 'close' )
+            },
+            Cancel : function() {
+                $('#set_username').dialog( 'close' )
+            },
+        }
+    } )
+} )
+
 ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow.addContact :
     function( name ) {
         var HashSet = java.util.HashSet
@@ -89,7 +160,7 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
             } ) )
         }
 
-        console.log( "Adding End: " + applicationPort.hash( name ) )
+        console.log( "Adding Other End: " + applicationPort.hash( name ) )
         applicationPort.addOtherEnd( applicationPort.hash( name ) )
         
         if( typeof ChatWindow.contacted[ name ] == 'undefined' ) {
@@ -160,77 +231,6 @@ $('button#clear').click( function() {
 } )
 
 var Date = java.util.Date
-
-ChatWindow.user = typeof ChatWindow.user != 'undefined' ? ChatWindow.user : {}
-ChatWindow.user.name = typeof ChatWindow.user.name != 'undefined' ? ChatWindow.user.name :
-    ( function() {
-            ChatWindow.user.__defineGetter__( 'name', function() {
-                return Database.withDatabase( new Database.DatabaseHandler( {
-                    doWithDatabase : function( db ) {
-                        if( db.getMetadata().getSchema().getClass( 'Self' ) != null ) {
-                            var result = db.query( new OSQLSynchQuery( 'select * from Self order by created_at desc limit 1' ), [] )
-                            console.log( "result size: " + result.size() )
-                            if( result.size() == 0 ) {
-                                return undefined
-                            }
-                            console.log( "Name: " + result.get( 0 ).field( 'created_at' ) )
-                            return result.get( 0 ).field( 'name' )
-                        }
-                    }
-                } ) )
-            } )
-        ChatWindow.user.__defineSetter__( 'name', function( name ) {
-            if( typeof name != 'undefined' && ChatWindow.user.name != name ) {
-                Database.withDatabase( new Database.DatabaseHandler( {
-                    doWithDatabase : function( db ) {
-                        Database.withDatabase( new Database.DatabaseHandlerVoid( {
-                            doWithDatabase : function( db ) {
-                                var doc = new ODocument( db, 'Self' )
-                                doc.field( 'name', name )
-                                doc.field( 'created_at', System.currentTimeMillis() )
-                                doc.save()
-                            }
-                        } ) )
-                    }
-                } ) )
-            }
-            $('#username').text( "Connected As: " + name )
-            return name
-        } )
-    } )()
-
-var SwitchListener = Packages.telehash.api.SwitchListener
-
-applicationPort.addSwitchListener( new SwitchListener( {
-    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
-        console.log( "rhino/counterpartySwitchForEndFound: " + string )
-        if( ! applicationPort.hash( self ).equals( string ) ) {
-            interestingEndsHolder.put( string, counterpartySwitch )
-        }
-    }
-} ) )
-
-applicationPort.startSwitch()
-
-console.log( "ChatWindow.user.name = " + ChatWindow.user.name )
-ChatWindow.user.name = ChatWindow.user.name // Load from db
-applicationPort.addOwnEnd( applicationPort.hash( ChatWindow.user.name ) )
-
-$('button#username').click( function() {
-    $('#set_username').dialog( {
-        buttons : {
-            Add : function() {
-                hostApplet.eval( "ChatWindow.user.name = '" + $(this).children( '#name' ).val() + "'" )
-                $(this).children( '#name' ).val( '' )
-                $('#set_username').dialog( 'close' )
-            },
-            Cancel : function() {
-                $('#set_username').dialog( 'close' )
-            },
-        }
-    } )
-} )
-
 var UUID = java.util.UUID
 var HashMap = java.util.HashMap
 
