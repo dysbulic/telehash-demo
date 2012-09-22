@@ -51,7 +51,7 @@ var isEmptyDatabase = function() {
 
 ChatWindow = typeof ChatWindow != 'undefined' ? ChatWindow : {}
 
-ChatWindow.contacted = typeof ChatWindow.contacted != 'undefined' ? ChatWindow.contacts : {}
+ChatWindow.$contactItem = typeof ChatWindow.$contactItem != 'undefined' ? ChatWindow.contacts : {}
 
 var InterestingEndsHolderImpl = Packages.telehash.switchimpl.api.InterestingEndsHolderImpl
 var ApplicationPortImpl = Packages.telehash.switchimpl.api.ApplicationPortImpl
@@ -62,10 +62,32 @@ var applicationPort = new ApplicationPortImpl()
 var SwitchListener = Packages.telehash.api.SwitchListener
 
 applicationPort.addSwitchListener( new SwitchListener( {
-    counterpartySwitchForEndFound : function( string, counterpartySwitch ) {
-        console.log( "counterpartySwitchForEndFound: " + string )
-        if( ! applicationPort.hash( self ).equals( string ) ) {
-            interestingEndsHolder.put( string, counterpartySwitch )
+    counterpartySwitchForEndFound : function( hash, counterpartySwitch ) {
+        console.log( "counterpartySwitchForEndFound: " + hash )
+        if( ! applicationPort.hash( self ).equals( hash ) ) {
+            interestingEndsHolder.put( hash, counterpartySwitch )
+
+            if( counterpartySwitch.isConnected() ) {
+                ChatWindow.$contactItem[ hash ]
+                    .addClass( 'online' )
+                    .attr( { title: counterpartySwitch.getIP() + ":" + counterpartySwitch.getPort() } )
+            } else {
+                ChatWindow.$contactItem[ hash ]
+                    .removeClass( 'online' )
+                    .addClass( 'switched' )
+                    .attr( { title: counterpartySwitch.getIP() + ":" + counterpartySwitch.getPort() } )
+            }                
+
+            var telexListenerScope = counterpartySwitch.addTelexListener( {
+                receivedTelex : function( telex ) {
+                    console.log( 'Recieved telex:' )
+                    console.log( telex )
+                    if( telex.containsKey( 'simplechat' ) ) {
+                        var chat_telex = telex.get( 'simplechat' )
+                        $('#log').append( $('<p/>').text( name + ": " + chat_telex.get( 'msg' ).toString() ) )
+                    }
+                }
+            } )
         }
     }
 } ) )
@@ -160,31 +182,15 @@ ChatWindow.addContact = typeof ChatWindow.addContact != 'undefined' ? ChatWindow
             } ) )
         }
 
-        console.log( "Adding Other End: " + applicationPort.hash( name ) )
-        applicationPort.addOtherEnd( applicationPort.hash( name ) )
+        var hash = applicationPort.hash( name )
+        console.log( "Adding Other End: " + hash )
+        applicationPort.addOtherEnd( hash )
         
-        if( typeof ChatWindow.contacted[ name ] == 'undefined' ) {
+        if( typeof ChatWindow.$contactItem[ name ] == 'undefined' ) {
             var $input = $('<input type="checkbox"/>')
             var $text = $('<span/>').text( name )
-            $('#contact').append( $('<li/>').append( $input ).append( $text ) )
-            ChatWindow.contacted[ name ] = true
-
-            console.log( "Getting switch for: " + interestingEndsHolder.hash( name ) )
-            var _switch = interestingEndsHolder.get( interestingEndsHolder.hash( name ) )
-            if( _switch == null ) {
-                console.error( "Couldn't get switch for: " + name )
-            } else {
-                var telexListenerScope = _switch.addTelexListener( {
-                    receivedTelex : function( telex ) {
-                        console.log( 'Recieved telex:' )
-                        console.log( telex )
-                        if( telex.containsKey( 'simplechat' ) ) {
-                            var chat_telex = telex.get( 'simplechat' )
-                            $('#log').append( $('<p/>').text( name + ": " + chat_telex.get( 'msg' ).toString() ) )
-                        }
-                    }
-                } )
-            }
+            ChatWindow.$contactItem[ hash ] = $('<li/>').append( $input ).append( $text )
+            $('#contact').append( ChatWindow.$contactItem[ hash ] )
         }
     }
 
@@ -281,7 +287,7 @@ ChatWindow.sendMessage = typeof ChatWindow.sendMessage != 'undefined' ? ChatWind
             console.log( "Message Too Long: " + msg )
         }
     }
-        
+
 $('button#send').click( function() {
     var message = $('#message').val()
     $('#message').val( '' )
